@@ -1,0 +1,117 @@
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+public class DataAnalysis {
+static void getData(String filename, int num, String counties[], int pop2010[], int pop2019[]) throws FileNotFoundException
+{
+// Create a File object and a Scanner object to read the file
+File infile = new File(filename);
+Scanner fileRead = new Scanner(infile);
+// Read the header
+String line = fileRead.nextLine();
+// Read the data of specified no. of counties and store the required data in the respective arrays
+int i=0;
+while (i<num)
+{
+line = fileRead.nextLine();
+String[] vals = line.split(",");
+counties[i] = vals[0];
+pop2010[i] = Integer.parseInt(vals[1]);
+pop2019[i] = Integer.parseInt(vals[10]);
+i++;
+}
+// Close the Scanner object
+fileRead.close();
+}
+static void getGrowth(int pop2010[], int pop2019[], int growth[], double per_growth[], int num)
+{
+for(int i=0; i<num; i++)
+{
+// Calculate the growth
+growth[i] = pop2019[i] - pop2010[i];
+// Calculate the growth percentage
+per_growth[i] = (double)growth[i] / pop2010[i] * 100;
+}
+}
+  
+static void displayData(String counties[], int pop2010[], int pop2019[], int growth[], double per_growth[], int num)
+{
+// Display the header
+System.out.format("%-16s %8s %8s %8s %9s\n", "County", "Pop 2010", "Pop 2019", "Growth", "Pct Grow ");
+System.out.format("---------------- -------- -------- -------- ---------\n");
+// Display the data for each county
+for(int i=0; i<num; i++)
+System.out.format("%-16s %8d %8d %8d %8.2f%%\n", counties[i], pop2010[i], pop2019[i], growth[i], per_growth[i]);
+}
+public static void main(String[] args) throws FileNotFoundException {
+// Create Scanner object to take input from the user
+Scanner input = new Scanner(System.in);
+String filename;
+int num;
+// Take input from the user
+System.out.print("Enter a data file to read: ");
+filename = input.next();
+System.out.print("Enter the number of counties: ");
+num = input.nextInt();
+// Create three arrays
+String counties[] = new String[num];
+int pop2010[] = new int[num];
+int pop2019[] = new int[num];
+// Close the Scanner object
+input.close();
+// Call function to read the data from the file and populate the arrays
+getData(filename, num, counties, pop2010, pop2019);
+// Create an array to store the population growth values and a array to store percentage growth
+int growth[] = new int[num];
+double per_growth[] = new double[num];
+// Call function to calculate growth and percentage growth for each county and store them in the respective arrays
+getGrowth(pop2010, pop2019, growth, per_growth, num);
+String max_gr_county = counties[0], biggest_loss_county = counties[0], largest_pct_grow_County = counties[0], largest_pct_loss_county = counties[0];
+int max_growth = 0, biggest_loss = 0, total_2019_pop = 0, count_greater_ave_2019_pop = 0, total_2010_pop = 0, total_pop_growth = 0;
+double largest_pct_growth = 0, ave_2019_pop, largest_pct_loss = 0, total_per_growth = 0;
+// Calculate required statistical data
+for(int i=0; i<num; i++)
+{
+if (growth[i] > max_growth)
+{
+max_growth = growth[i];
+max_gr_county = counties[i];
+}
+if (growth[i] < biggest_loss)
+{
+biggest_loss = growth[i];
+biggest_loss_county = counties[i];
+}
+if (per_growth[i] > largest_pct_growth)
+{
+largest_pct_grow_County = counties[i];
+largest_pct_growth = per_growth[i];
+}
+if (per_growth[i] < largest_pct_loss)
+{
+largest_pct_loss = per_growth[i];
+largest_pct_loss_county = counties[i];
+}
+total_2019_pop += pop2019[i];
+total_2010_pop += pop2010[i];
+total_pop_growth += growth[i];
+total_per_growth += per_growth[i];
+}
+ave_2019_pop = (double)total_2019_pop / num;
+for(int i=0; i<num; i++)
+if (pop2019[i] > ave_2019_pop)
+count_greater_ave_2019_pop++;
+// Call function to display the county name, population, population growth, and percentage population growth for each county
+displayData(counties, pop2010, pop2019, growth, per_growth, num);
+// Display the stats
+System.out.format("-----------------------------------------------------\n");
+System.out.format("%-16s %8d %8d %8d %8.2f%%\n", "Total", total_2010_pop, total_2019_pop, total_pop_growth, total_per_growth);
+System.out.format("\nMost growth: %s (%d)\n", max_gr_county, max_growth);
+System.out.format("Biggest loss: %s (%d)\n", biggest_loss_county, biggest_loss);
+System.out.format("Largest Pct growth: %s (%.2f%%)\n", largest_pct_grow_County, largest_pct_growth);
+System.out.format("Largest Pct loss: %s (%.2f%%)\n", largest_pct_loss_county, largest_pct_loss);
+System.out.format("Average 2019 Population per County: %.2f\n", ave_2019_pop);
+System.out.format("Num. Counties with 2019 Pop. Larger Than Average: %d\n", count_greater_ave_2019_pop);
+}
+}
